@@ -1,4 +1,3 @@
-// config/db.js
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
@@ -9,7 +8,14 @@ console.log('📦 Base utilisée par Sequelize :', dbUrl);
 
 const sequelize = new Sequelize(dbUrl, {
   dialect: 'postgres',
+  protocol: 'postgres',
   logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false // très important pour Render
+    }
+  }
 });
 
 module.exports = sequelize;
