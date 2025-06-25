@@ -21,18 +21,19 @@ app.use(cors({
   credentials: true
 }))
 
-app.set('trust proxy', 1); // obligatoire sur Render
+app.set('trust proxy', 1);
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: true,                    // car Render = HTTPS
-    sameSite: 'none',                // car cross-site (Netlify ⇄ Render)
+    secure: true, // HTTPS obligatoire sur Render
+    sameSite: 'none', // Netlify + Render = cross-site
     httpOnly: true
   }
 }));
+
 
 
 

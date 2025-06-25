@@ -8,14 +8,15 @@ const purchaseController = require('../controllers/purchase.controller');
 // Middleware debug pour logger les headers/cookies
 router.post('/lesson/:id',
   (req, res, next) => {
-    console.log('🎯 SESSION ID POST achat:', req.sessionID);
-    console.log('🍪 Cookies:', req.headers.cookie);
+    console.log('POST session ID:', req.sessionID);
+    console.log('Cookies:', req.headers.cookie);
     next();
   },
   checkJWT,
   csrfProtection,
   purchaseController.buyLesson
 );
+
 
   checkJWT,
   csrfProtection,

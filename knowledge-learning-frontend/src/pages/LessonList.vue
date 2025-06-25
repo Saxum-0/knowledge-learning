@@ -20,29 +20,24 @@ const buy = async (id) => {
   try {
     const csrfRes = await api.get('/security/csrf-token', {
       withCredentials: true
-    })
-    const csrfToken = csrfRes.data.csrfToken
+    });
+
+    const csrfToken = csrfRes.data.csrfToken;
 
     await api.post(`/buy/lesson/${id}`, {}, {
       headers: {
         'X-CSRF-Token': csrfToken
       },
       withCredentials: true
-    })
+    });
 
-    message.value = '✅ Leçon achetée avec succès !'
+    alert('✅ Leçon achetée');
   } catch (err) {
-    console.error('Erreur achat leçon', err)
-
-    if (err.response?.status === 409) {
-      message.value = '⚠️ Cette leçon est déjà achetée.'
-    } else if (err.response?.status === 403) {
-      message.value = '⛔ Problème de sécurité CSRF ou session. Rafraîchis la page.'
-    } else {
-      message.value = '❌ Erreur lors de l’achat.'
-    }
+    console.error('Erreur achat leçon', err);
+    alert('❌ Erreur achat : ' + err.response?.status);
   }
 }
+
 </script>
 
 <template>

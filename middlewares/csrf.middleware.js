@@ -1,7 +1,5 @@
-// middlewares/csrf.middleware.js
 const csrf = require('csurf');
+const csrfProtection = csrf({ cookie: false }); // on utilise la session
 
-// Utilise la session, pas les cookies
-const csrfProtection = csrf({ cookie: false });
 
 module.exports = csrfProtection;
