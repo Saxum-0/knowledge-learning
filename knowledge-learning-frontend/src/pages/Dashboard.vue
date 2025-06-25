@@ -14,13 +14,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import api from '@/utils/api'
 
 const isAdmin = ref(false)
 
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/user/me', {
+    const res = await api.get('/user/me', {
       withCredentials: true
     })
     isAdmin.value = res.data.role === 'admin'

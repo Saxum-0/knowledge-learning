@@ -19,14 +19,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import api from '@/utils/api'
 
 const certifications = ref([])
 
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/certifications/my-certifications', {
-      withCredentials: true,
+    const res = await api.get('/certifications/my-certifications', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -43,6 +42,7 @@ function formatDate(dateStr) {
 }
 
 </script>
+
 <style scoped>
 h2 {
   font-family: 'Comic Sans MS', cursive, sans-serif;

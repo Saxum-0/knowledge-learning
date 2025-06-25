@@ -21,14 +21,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '@/utils/api'
 
 const router = useRouter()
 const user = ref(null)
 
 const fetchUser = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/user/me', {
+    const res = await api.get('/user/me', {
       withCredentials: true
     })
     user.value = res.data
@@ -42,7 +42,7 @@ onMounted(fetchUser)
 
 const logout = async () => {
   try {
-    await axios.post('http://localhost:3000/auth/logout', {}, {
+    await api.post('/auth/logout', {}, {
       withCredentials: true
     })
     user.value = null

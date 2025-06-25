@@ -47,7 +47,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import api from '@/utils/api'
 
 const message = ref('')
 const purchasedLessons = ref([])
@@ -59,23 +59,20 @@ const csrfToken = ref('')
 onMounted(async () => {
   try {
     // 🎟️ 1. Récupère le token CSRF
-    const csrfRes = await axios.get('http://localhost:3000/security/csrf-token', {
+    const csrfRes = await api.get('/security/csrf-token', {
       withCredentials: true
     })
     csrfToken.value = csrfRes.data.csrfToken
 
     // 📦 2. Charge les données (en incluant le header CSRF même en GET)
     const [myLessonsRes, myCursusRes, validatedRes] = await Promise.all([
-      axios.get('http://localhost:3000/buy/my-lessons', {
-        withCredentials: true,
+      api.get('/buy/my-lessons', {
         headers: { 'X-CSRF-Token': csrfToken.value }
       }),
-      axios.get('http://localhost:3000/buy/my-cursus', {
-        withCredentials: true,
+      api.get('/buy/my-cursus', {
         headers: { 'X-CSRF-Token': csrfToken.value }
       }),
-      axios.get('http://localhost:3000/validate/my-validations', {
-        withCredentials: true,
+      api.get('/validate/my-validations', {
         headers: { 'X-CSRF-Token': csrfToken.value }
       })
     ])
@@ -94,11 +91,11 @@ onMounted(async () => {
 const toggleValidation = async (type, id) => {
   const isLesson = type === 'lesson'
   const list = isLesson ? validatedLessons : validatedCursus
-  const url = `http://localhost:3000/validate-protected/${type}/${id}`
+  const url = `/validate-protected/${type}/${id}`
   const method = list.value.includes(id) ? 'delete' : 'post'
 
   try {
-    await axios({
+    await api({
       method,
       url,
       withCredentials: true,

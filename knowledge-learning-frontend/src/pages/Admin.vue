@@ -147,7 +147,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import api from '@/utils/api'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -171,7 +171,7 @@ const editLesson = ref({ id: '', title: '', price: 0, description: '', videoUrl:
 
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/user/me', { withCredentials: true })
+    const res = await api.get('/user/me')
     if ((res.data.role || '').toLowerCase() !== 'admin') {
       router.push('/dashboard')
     } else {
@@ -185,11 +185,11 @@ onMounted(async () => {
 const loadData = async () => {
   try {
     const [t, c, l, u, p] = await Promise.all([
-      axios.get('http://localhost:3000/admin/themes', { withCredentials: true }),
-      axios.get('http://localhost:3000/admin/cursus', { withCredentials: true }),
-      axios.get('http://localhost:3000/admin/lesson', { withCredentials: true }),
-      axios.get('http://localhost:3000/admin/users', { withCredentials: true }),
-      axios.get('http://localhost:3000/admin/purchases', { withCredentials: true })
+      api.get('/admin/themes'),
+      api.get('/admin/cursus'),
+      api.get('/admin/lesson'),
+      api.get('/admin/users'),
+      api.get('/admin/purchases')
     ])
     themes.value = t.data
     cursus.value = c.data
@@ -204,7 +204,7 @@ const loadData = async () => {
 const deleteItem = async (type, id) => {
   if (!confirm('Confirmer la suppression ?')) return
   try {
-    await axios.delete(`http://localhost:3000/admin/${type}/${id}`, { withCredentials: true })
+    await api.delete(`/admin/${type}/${id}`)
     await loadData()
   } catch (err) {
     console.error(`Erreur suppression ${type}:`, err)
@@ -213,7 +213,7 @@ const deleteItem = async (type, id) => {
 
 const createItem = async (type, data) => {
   try {
-    await axios.post(`http://localhost:3000/admin/${type}`, data, { withCredentials: true })
+    await api.post(`/admin/${type}`, data,)
     await loadData()
   } catch (err) {
     console.error(`Erreur création ${type}:`, err)
@@ -222,7 +222,7 @@ const createItem = async (type, data) => {
 
 const updateItem = async (type, id, data) => {
   try {
-    await axios.put(`http://localhost:3000/admin/${type}/${id}`, data, { withCredentials: true })
+    await api.put(`/admin/${type}/${id}`, data,)
     await loadData()
   } catch (err) {
     console.error(`Erreur mise à jour ${type}:`, err)
@@ -251,10 +251,10 @@ const submitUser = async () => {
 
     if (editingUser.value.id) {
       // Modification
-      await axios.put(`http://localhost:3000/admin/users/${editingUser.value.id}`, payload, { withCredentials: true });
+      await api.put(`/admin/users/${editingUser.value.id}`, payload);
     } else {
       // Création
-      await axios.post(`http://localhost:3000/admin/users`, payload, { withCredentials: true });
+      await api.post(`/admin/users`, payload);
     }
 
     await loadData();

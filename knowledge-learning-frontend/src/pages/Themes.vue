@@ -16,13 +16,13 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import axios from 'axios'
+import api from '@/utils/api'
 
 const themes = ref([])
 
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/public/themes', {
+    const res = await api.get('/public/themes', {
       withCredentials: true
     })
     themes.value = res.data

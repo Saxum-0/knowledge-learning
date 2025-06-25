@@ -22,7 +22,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import api from '@/utils/api'
 import { useRouter } from 'vue-router'
 
 const email = ref('')
@@ -34,8 +34,7 @@ const router = useRouter()
 // Récupère le token CSRF au montage du composant
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/security/csrf-token', {
-      withCredentials: true
+    const res = await api.get('/security/csrf-token', {
     })
     csrfToken.value = res.data.csrfToken
   } catch (err) {
@@ -45,7 +44,7 @@ onMounted(async () => {
 
 const handleLogin = async () => {
   try {
-    const res = await axios.post('http://localhost:3000/auth/login', {
+    const res = await api.post('/auth/login', {
       email: email.value,
       password: password.value,
     }, {

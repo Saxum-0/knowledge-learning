@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import api from '@/utils/api'
 
 const route = useRoute()
 const cursus = ref([])
@@ -9,8 +9,7 @@ const message = ref('')
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`http://localhost:3000/public/themes/${route.params.id}/cursus`, {
-      withCredentials: true
+    const res = await api.get(`/public/themes/${route.params.id}/cursus`, {
     })
     cursus.value = res.data
   } catch (error) {
@@ -20,12 +19,12 @@ onMounted(async () => {
 
 const buy = async (id) => {
   try {
-    const csrfRes = await axios.get('http://localhost:3000/security/csrf-token', {
+    const csrfRes = await api.get('/security/csrf-token', {
       withCredentials: true
     })
     const csrfToken = csrfRes.data.csrfToken
 
-    await axios.post(`http://localhost:3000/buy/cursus/${id}`, {}, {
+    await api.post(`/buy/cursus/${id}`, {}, {
       withCredentials: true,
       headers: { 'X-CSRF-Token': csrfToken }
     })

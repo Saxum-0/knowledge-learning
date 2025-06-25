@@ -13,7 +13,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import api from '@/utils/api'
 
 const route = useRoute()
 const success = ref(false)
@@ -22,7 +22,7 @@ const loading = ref(true)
 onMounted(async () => {
   try {
     const token = route.params.token
-    await axios.get(`http://localhost:3000/auth/verify/${token}`)
+    await api.get(`/auth/verify/${token}`)
     success.value = true
   } catch (err) {
     console.error('Erreur vérification :', err)
