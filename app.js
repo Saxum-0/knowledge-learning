@@ -18,7 +18,7 @@ app.set('trust proxy', 1);
 
 // ✅ CORS configuration
 app.use(cors({
-  origin: 'http://localhost:5173', // frontend origin
+  origin: ['https://knowledge-learning.netlify.app', 'http://localhost:5173'], // frontend origin
   credentials: true
 }));
 
