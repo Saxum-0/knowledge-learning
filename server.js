@@ -2,6 +2,12 @@ require('dotenv').config();
 const app = require('./app');
 const sequelize = require('./config/db');
 
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: process.env.SQLITE_STORAGE || './dev.db', // on changera ça sur Render
+  logging: false
+});
+
 // 🔁 Charge les associations entre les modèles
 require('./models'); // ← très important !
 
