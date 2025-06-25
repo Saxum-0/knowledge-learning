@@ -53,8 +53,15 @@ const handleLogin = async () => {
         'X-CSRF-Token': csrfToken.value
       }
     })
+
     if (res.status === 200) {
+      // 🔐 On stocke le token JWT dans localStorage
+      localStorage.setItem('token', res.data.token)
+
+      // 🔁 Met à jour la navbar dynamiquement
       window.dispatchEvent(new Event('user-updated'))
+
+      // ✅ Redirige vers dashboard
       router.push('/dashboard')
     }
   } catch (err) {
@@ -62,6 +69,7 @@ const handleLogin = async () => {
     console.error(err)
   }
 }
+
 </script>
 
 <style scoped>
@@ -129,6 +137,4 @@ button:hover {
   font-weight: bold;
   text-align: center;
 }
-
-
 </style>

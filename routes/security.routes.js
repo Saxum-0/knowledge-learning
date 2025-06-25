@@ -1,13 +1,15 @@
+// routes/security.routes.js
 const express = require('express');
 const router = express.Router();
-const csrf = require('csurf');
+const csrfProtection = require('../middlewares/csrf.middleware');
 
-// Ce csrfProtection ici est important !
-const csrfProtection = csrf({ cookie: false });
-
+// Route publique pour obtenir le token CSRF
 router.get('/csrf-token', csrfProtection, (req, res) => {
+  console.log("🎟️ SESSION ID CSRF:", req.sessionID);
+  console.log("🍪 Cookies (GET):", req.headers.cookie);
   res.json({ csrfToken: req.csrfToken() });
 });
+
 
 module.exports = router;
 

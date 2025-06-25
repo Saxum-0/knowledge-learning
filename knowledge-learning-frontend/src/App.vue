@@ -17,29 +17,44 @@
   </div>
 </template>
 
-
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import api from '@/utils/api'
 
 const router = useRouter()
+const route = useRoute()
 const user = ref(null)
 
 const fetchUser = async () => {
   try {
+    const token = localStorage.getItem('token') // Récupère le token stocké au login
+    if (!token) return
+
     const res = await api.get('/user/me', {
-      withCredentials: true
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     })
+    console.log('👤 Utilisateur récupéré :', res.data)
     user.value = res.data
   } catch (err) {
+    console.warn('⚠️ Erreur fetchUser :', err)
     user.value = null
   }
 }
 
-// 🔁 Recharge l'utilisateur au chargement de l'app
+
+
+
 onMounted(fetchUser)
 
+// reload user at every page
+watch(() => route.fullPath, () => {
+  fetchUser()
+})
+
+// 🔁 Logout
 const logout = async () => {
   try {
     await api.post('/auth/logout', {}, {
@@ -52,7 +67,7 @@ const logout = async () => {
   }
 }
 
-// Écoute les changements manuels après login/register
+// 🔁 update user for navbar ( login/register)
 window.addEventListener('user-updated', fetchUser)
 </script>
 
@@ -63,7 +78,7 @@ window.addEventListener('user-updated', fetchUser)
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  background-color: #00497c; /* bleu foncé */
+  background-color: #00497c;
   padding: 1rem 2rem;
   font-family: 'Comic Sans MS', cursive, sans-serif;
 }
@@ -93,9 +108,9 @@ window.addEventListener('user-updated', fetchUser)
   margin-right: 0.5rem;
 }
 
-/* Boutons dans la navbar */
+
 .navbar button {
-  background-color: #cd2c2e; /* rouge */
+  background-color: #cd2c2e;
   color: white;
   border: none;
   padding: 0.4rem 0.8rem;
@@ -109,7 +124,6 @@ window.addEventListener('user-updated', fetchUser)
   background-color: #b12628;
 }
 
-/* Padding général du contenu principal */
 main {
   padding: 1.5rem;
 }

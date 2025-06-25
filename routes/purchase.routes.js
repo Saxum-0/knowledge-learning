@@ -1,13 +1,28 @@
+// routes/purchase.routes.js
 const express = require('express');
 const router = express.Router();
 const { checkJWT } = require('../middlewares/auth.middleware');
-const purchaseController = require('../controllers/purchase.controller');
 const csrfProtection = require('../middlewares/csrf.middleware');
+const purchaseController = require('../controllers/purchase.controller');
 
-// Achat d'une leçon
-router.post('/lesson/:id', checkJWT, csrfProtection, purchaseController.buyLesson);
+// Middleware debug pour logger les headers/cookies
+router.post('/lesson/:id',
+  (req, res, next) => {
+    console.log('🎯 SESSION ID POST achat:', req.sessionID);
+    console.log('🍪 Cookies:', req.headers.cookie);
+    next();
+  },
+  checkJWT,
+  csrfProtection,
+  purchaseController.buyLesson
+);
+
+  checkJWT,
+  csrfProtection,
+  purchaseController.buyLesson
+
+
 router.post('/cursus/:id', checkJWT, csrfProtection, purchaseController.buyCursus);
-
 router.get('/my-lessons', checkJWT, csrfProtection, purchaseController.getMyLessons);
 router.get('/my-cursus', checkJWT, csrfProtection, purchaseController.getMyCursus);
 

@@ -1,6 +1,7 @@
+// middlewares/csrf.middleware.js
 const csrf = require('csurf');
 
-module.exports = csrf({
-  cookie: false,
-  value: req => req.headers['x-csrf-token'] // ← lecture dans les headers
-});
+// Utilise la session, pas les cookies
+const csrfProtection = csrf({ cookie: false });
+
+module.exports = csrfProtection;

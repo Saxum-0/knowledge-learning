@@ -13,26 +13,28 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// 🌐 Fix session behind proxy (ex: Vite dev server)
-app.set('trust proxy', 1);
+
 
 // ✅ CORS configuration
 app.use(cors({
-  origin: ['https://knowledge-learning.netlify.app', 'http://localhost:5173'], // frontend origin
+  origin: ['https://knowledge-learning.netlify.app', 'http://localhost:5173'],
   credentials: true
-}));
+}))
 
-// 🔐 Session configuration (utilisée par CSRF)
+app.set('trust proxy', 1); // obligatoire sur Render
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'keyboard cat',
+  secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
-    secure: false,           // false en développement
-    httpOnly: true,
-    sameSite: 'lax'          // recommandé pour CSRF protection
+    secure: true,                    // car Render = HTTPS
+    sameSite: 'none',                // car cross-site (Netlify ⇄ Render)
+    httpOnly: true
   }
 }));
+
+
 
 // 🛡️ Middleware CSRF (à utiliser dans les routes concernées)
 const csrfProtection = csrf({ cookie: false });

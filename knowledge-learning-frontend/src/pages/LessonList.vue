@@ -9,9 +9,7 @@ const route = useRoute()
 
 onMounted(async () => {
   try {
-    const res = await api.get(`/public/cursus/${route.params.id}/lessons`, {
-      withCredentials: true
-    })
+    const res = await api.get(`/public/cursus/${route.params.id}/lessons`)
     lessons.value = res.data
   } catch (err) {
     console.error('Erreur récupération des leçons', err)
@@ -26,14 +24,23 @@ const buy = async (id) => {
     const csrfToken = csrfRes.data.csrfToken
 
     await api.post(`/buy/lesson/${id}`, {}, {
-      withCredentials: true,
-      headers: { 'X-CSRF-Token': csrfToken }
+      headers: {
+        'X-CSRF-Token': csrfToken
+      },
+      withCredentials: true
     })
 
-    message.value = 'Leçon achetée avec succès !'
+    message.value = '✅ Leçon achetée avec succès !'
   } catch (err) {
     console.error('Erreur achat leçon', err)
-    message.value = 'Erreur lors de l’achat.'
+
+    if (err.response?.status === 409) {
+      message.value = '⚠️ Cette leçon est déjà achetée.'
+    } else if (err.response?.status === 403) {
+      message.value = '⛔ Problème de sécurité CSRF ou session. Rafraîchis la page.'
+    } else {
+      message.value = '❌ Erreur lors de l’achat.'
+    }
   }
 }
 </script>
@@ -51,6 +58,8 @@ const buy = async (id) => {
     <p v-if="message" class="feedback">{{ message }}</p>
   </div>
 </template>
+
+
 
 <style scoped>
 div {
@@ -103,4 +112,3 @@ button:hover {
   color: #82b864;
 }
 </style>
-

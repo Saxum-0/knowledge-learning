@@ -33,6 +33,8 @@ exports.buyLesson = async (req, res) => {
 
   } catch (error) {
     console.error("Erreur achat leçon :", error.message, error.stack);
+    console.log("🧪 POST Achat sessionID:", req.sessionID);
+console.log("🧪 POST Achat cookies:", req.headers.cookie);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
