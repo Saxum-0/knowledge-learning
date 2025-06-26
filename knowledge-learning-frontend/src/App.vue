@@ -29,11 +29,8 @@ const isLoading = ref(true)
 
 const fetchUser = async () => {
   isLoading.value = true
-
   try {
-    const res = await api.get('/user/me', {
-      withCredentials: true
-    })
+    const res = await api.get('/user/me') // le CSRF est déjà géré côté axios
     user.value = res.data
     console.log('👤 Utilisateur récupéré :', res.data)
   } catch (err) {
@@ -44,6 +41,7 @@ const fetchUser = async () => {
   }
 }
 
+
 onMounted(fetchUser)
 
 // Rafraîchit l'utilisateur à chaque changement de route
@@ -51,15 +49,14 @@ watch(() => route.fullPath, fetchUser)
 
 const logout = async () => {
   try {
-    await api.post('/auth/logout', {}, {
-      withCredentials: true
-    })
+    await api.post('/auth/logout') // withCredentials est déjà dans api.js
     user.value = null
     router.push('/')
   } catch (err) {
     console.error('Erreur logout', err)
   }
 }
+
 
 // Met à jour le user après login/register
 window.addEventListener('user-updated', fetchUser)
