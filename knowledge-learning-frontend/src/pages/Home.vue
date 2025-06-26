@@ -18,7 +18,7 @@
       <iframe
         width="560"
         height="315"
-        src="https://www.youtube.com/embed/TON_ID_YOUTUBE_ICI"
+        src="https://youtu.be/JXFbRkmFn4s"
         title="Présentation de Knowledge Learning"
         frameborder="0"
         allowfullscreen
