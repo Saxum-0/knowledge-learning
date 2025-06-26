@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.sendActivationEmail = (to, token) => {
-  const url = `${process.env.FRONT_URL}/auth/verify/${token}`;
+  const url = `${process.env.BACK_URL}/auth/verify/${token}`;
   return transporter.sendMail({
     from: `"Knowledge Learning" <${process.env.SMTP_USER}>`,
     to,
