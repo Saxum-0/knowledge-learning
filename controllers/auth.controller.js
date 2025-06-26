@@ -78,16 +78,34 @@ exports.verify = async (req, res) => {
     user.activationToken = null;
     await user.save();
 
-    console.log('✅ Activation réussie pour :', user.email)
+    // 💡 Génère un token JWT comme dans login
+    const jwtToken = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
-    res.status(200).json({ message: "✅ Compte activé avec succès. Vous pouvez maintenant vous connecter." });
+    // 💡 Envoie le token dans un cookie httpOnly
+    res.cookie('token', jwtToken, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true, // obligatoire sur Render/HTTPS
+      maxAge: 1000 * 60 * 60 * 24
+    });
+
+    console.log('✅ Activation + login automatique réussis pour :', user.email)
+
+    res.status(200).json({ message: "✅ Compte activé et connecté. Bienvenue !" });
 
   } catch (error) {
     console.error('❌ Erreur activation :', error);
     res.status(500).json({ message: "Erreur serveur lors de l'activation." });
   }
 };
-
 
 exports.login = async (req, res) => {
   try {
