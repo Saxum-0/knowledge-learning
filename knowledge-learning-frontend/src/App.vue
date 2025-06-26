@@ -30,7 +30,7 @@ const isLoading = ref(true)
 const fetchUser = async () => {
   isLoading.value = true
   try {
-    const res = await api.get('/user/me') // le CSRF est déjà géré côté axios
+    const res = await api.get('/user/me', { withCredentials: true })
     user.value = res.data
     console.log('👤 Utilisateur récupéré :', res.data)
   } catch (err) {
@@ -41,17 +41,26 @@ const fetchUser = async () => {
   }
 }
 
+// ✅ Ne fetch l'utilisateur que si un cookie est présent
+onMounted(() => {
+  console.log('📦 Cookies :', document.cookie)
+  if (document.cookie.includes('token')) {
+    fetchUser()
+  } else {
+    isLoading.value = false
+  }
+})
 
-onMounted(fetchUser)
-
-// Rafraîchit l'utilisateur à chaque changement de route
-watch(() => route.fullPath, fetchUser)
+// 🔁 Met à jour l’utilisateur à chaque changement de route
+watch(() => route.fullPath, () => {
+  if (document.cookie.includes('token')) {
+    fetchUser()
+  }
+})
 
 const logout = async () => {
   try {
-    await api.post('/auth/logout', null, {
-      withCredentials: true
-    })
+    await api.post('/auth/logout', null, { withCredentials: true })
     user.value = null
     router.push('/')
   } catch (err) {
@@ -59,11 +68,12 @@ const logout = async () => {
   }
 }
 
+// 🔔 Réagit à l’événement custom "user-updated" après login/register
 onMounted(() => {
   window.addEventListener('user-updated', async () => {
     try {
-      const res = await api.get('/user/me', { withCredentials: true });
-      user.value = res.data // 🔥 C’est ça qu’il manquait
+      const res = await api.get('/user/me', { withCredentials: true })
+      user.value = res.data
       console.log('👤 Utilisateur mis à jour après login :', res.data)
     } catch (err) {
       user.value = null
@@ -71,10 +81,10 @@ onMounted(() => {
     }
   })
 })
-
-
-
 </script>
+
+
+
 
 
 <style scoped>
