@@ -22,12 +22,18 @@ onMounted(async () => {
     const res = await api.get(`/auth/verify/${token}`)
     console.log('✅ Vérification réussie :', res.data)
     success.value = true
-    setTimeout(() => router.push('/login'), 2500)
+
+    // ✅ Ajoute cette partie ici
+    setTimeout(() => {
+      router.push('/login') // Redirige vers la page de connexion après 2.5s
+    }, 2500)
+
   } catch (err) {
     console.error('❌ Erreur vérification :', err)
     error.value = true
   }
 })
+
 </script>
 
 <style scoped>
