@@ -28,35 +28,29 @@ const user = ref(null)
 const isLoading = ref(true)
 
 const fetchUser = async () => {
-  isLoading.value = true
   const token = localStorage.getItem('token')
 
   if (!token) {
+    console.log('🔓 Aucun token trouvé, utilisateur non connecté.')
     user.value = null
-    isLoading.value = false
     return
   }
 
   try {
     const res = await api.get('/user/me', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     })
     user.value = res.data
+    console.log('👤 Utilisateur récupéré :', res.data)
   } catch (err) {
     console.warn('⚠️ Erreur fetchUser :', err)
-
-    // ⚠️ Si le token est refusé, on le vire, sinon il reste et fout la merde
-    if (err.response?.status === 401 || err.response?.status === 403) {
-      localStorage.removeItem('token')
-    }
-
+    localStorage.removeItem('token')
     user.value = null
-  } finally {
-    isLoading.value = false
+    console.log('🧹 Token supprimé du localStorage')
+    router.push('/login')
   }
 }
+
 
 onMounted(fetchUser)
 
