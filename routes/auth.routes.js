@@ -7,10 +7,7 @@ router.post('/register', authController.register);
 router.get('/verify/:token', authController.verify);
 router.post('/login', authController.login);
 
-router.post('/logout', (req, res) => {
-  res.clearCookie('token'); // ou destroy session si tu l'utilises
-  res.json({ message: 'Déconnecté' });
-});
+router.post('/logout', authController.logout);
 
 
 module.exports = router;
