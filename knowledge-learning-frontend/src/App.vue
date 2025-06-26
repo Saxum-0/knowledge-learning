@@ -33,6 +33,7 @@ const fetchUser = async () => {
   if (!token) {
     console.log('🔓 Aucun token trouvé, utilisateur non connecté.')
     user.value = null
+    isLoading.value = false
     return
   }
 
@@ -48,8 +49,11 @@ const fetchUser = async () => {
     user.value = null
     console.log('🧹 Token supprimé du localStorage')
     router.push('/login')
+  } finally {
+    isLoading.value = false // ✅ obligatoire pour réafficher la navbar
   }
 }
+
 
 
 onMounted(fetchUser)
