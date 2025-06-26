@@ -1,7 +1,14 @@
 const { Purchase, Lesson, Cursus } = require('../models');
+const { Op } = require('sequelize');
 
-
-// POST: Acheter une leçon
+/**
+ * Purchase a lesson for the authenticated user.
+ *
+ * @route POST /buy/lesson/:id
+ * @access Private
+ * @param {Object} req - Express request object with user and lesson ID.
+ * @param {Object} res - Express response object.
+ */
 exports.buyLesson = async (req, res) => {
   const userId = req.user.id;
   const lessonId = req.params.id;
@@ -12,9 +19,6 @@ exports.buyLesson = async (req, res) => {
       return res.status(404).json({ message: "Leçon introuvable." });
     }
 
-    console.log({ UserId: userId, LessonId: lesson.id });
-
-    // Vérifie si déjà achetée
     const alreadyPurchased = await Purchase.findOne({
       where: { UserId: userId, LessonId: lesson.id }
     });
@@ -23,7 +27,6 @@ exports.buyLesson = async (req, res) => {
       return res.status(409).json({ message: "Leçon déjà achetée." });
     }
 
-    // Enregistre l’achat
     await Purchase.create({
       UserId: userId,
       LessonId: lesson.id
@@ -33,20 +36,24 @@ exports.buyLesson = async (req, res) => {
 
   } catch (error) {
     console.error("Erreur achat leçon :", error.message, error.stack);
-    console.log("🧪 POST Achat sessionID:", req.sessionID);
-console.log("🧪 POST Achat cookies:", req.headers.cookie);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
 
-// POST: Acheter un cursus
+/**
+ * Purchase a cursus for the authenticated user.
+ *
+ * @route POST /buy/cursus/:id
+ * @access Private
+ * @param {Object} req - Express request object with user and cursus ID.
+ * @param {Object} res - Express response object.
+ */
 exports.buyCursus = async (req, res) => {
   const userId = req.user.id;
   const cursusId = req.params.id;
 
   try {
     const cursus = await Cursus.findByPk(cursusId);
-
     if (!cursus) {
       return res.status(404).json({ message: "Cursus introuvable." });
     }
@@ -72,14 +79,19 @@ exports.buyCursus = async (req, res) => {
   }
 };
 
-// GET: Toutes les leçons achetées (directes ou via cursus)
-const { Op } = require('sequelize');
-
+/**
+ * Retrieve all lessons purchased by the user,
+ * including lessons from purchased cursus.
+ *
+ * @route GET /buy/my-lessons
+ * @access Private
+ * @param {Object} req - Express request object with user ID.
+ * @param {Object} res - Express response object.
+ */
 exports.getMyLessons = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 1. Leçons achetées directement
     const directLessons = await Lesson.findAll({
       attributes: ['id', 'title', 'description', 'videoUrl', 'price', 'CursusId', 'createdAt'],
       include: [
@@ -91,7 +103,6 @@ exports.getMyLessons = async (req, res) => {
       ]
     });
 
-    // 2. Cursus achetés
     const purchasedCursus = await Purchase.findAll({
       attributes: ['CursusId'],
       where: {
@@ -102,13 +113,11 @@ exports.getMyLessons = async (req, res) => {
 
     const cursusIds = purchasedCursus.map(p => p.CursusId);
 
-    // 3. Leçons liées aux cursus
     const lessonsFromCursus = await Lesson.findAll({
       where: { CursusId: cursusIds },
       attributes: ['id', 'title', 'description', 'videoUrl', 'price', 'CursusId', 'createdAt']
     });
 
-    // 4. Fusionner et dédupliquer
     const allLessons = [...directLessons, ...lessonsFromCursus];
     const uniqueLessonsMap = new Map();
     allLessons.forEach(lesson => uniqueLessonsMap.set(lesson.id, lesson));
@@ -120,29 +129,30 @@ exports.getMyLessons = async (req, res) => {
   }
 };
 
-
-// controllers/buy.controller.js
-
-
+/**
+ * Retrieve all cursus purchased by the user directly or inferred from lesson purchases.
+ *
+ * @route GET /buy/my-cursus
+ * @access Private
+ * @param {Object} req - Express request object with user ID.
+ * @param {Object} res - Express response object.
+ */
 exports.getMyCursus = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 1. Cursus achetés directement
     const directCursusPurchases = await Purchase.findAll({
       where: {
         UserId: userId,
         CursusId: { [Op.ne]: null }
       },
       include: [{
-      model: Cursus,
-      as: 'cursus' // ← correspond à ton alias défini dans les associations
-}]
-
+        model: Cursus,
+        as: 'cursus'
+      }]
     });
     const directCursusIds = directCursusPurchases.map(p => p.CursusId);
 
-    // 2. Leçons achetées
     const lessonPurchases = await Purchase.findAll({
       where: {
         UserId: userId,
@@ -152,7 +162,6 @@ exports.getMyCursus = async (req, res) => {
 
     const purchasedLessonIds = lessonPurchases.map(p => p.LessonId);
 
-    // 3. Vérifie si un cursus a toutes ses leçons achetées
     const allCursus = await Cursus.findAll({
       include: [{ model: Lesson, as: 'lessons' }]
     });
@@ -165,7 +174,6 @@ exports.getMyCursus = async (req, res) => {
       return allLessonsBought && !directCursusIds.includes(c.id);
     });
 
-    // 4. Fusionne sans doublons
     const fullCursusList = [
       ...directCursusPurchases.map(p => p.cursus),
       ...extraCursus

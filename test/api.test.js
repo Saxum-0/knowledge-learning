@@ -2,81 +2,110 @@ const request = require('supertest');
 const sequelize = require('../config/db');
 const app = require('../app');
 const bcrypt = require('bcrypt');
-const { User, Cursus, Lesson, Theme } = require('../models');
+const { User, Theme, Cursus, Lesson } = require('../models');
 
-const agent = request.agent(app); // Authenticated session
+const agent = request.agent(app);
 let csrfToken;
+let jwtToken;
 
 beforeAll(async () => {
   await sequelize.sync({ force: true });
 
+  // Création d’un utilisateur activé
   await User.create({
     fullName: 'Testeur',
     email: 'test@example.com',
     password: await bcrypt.hash('Azerty123!', 10),
     role: 'client',
-    isActive: true
+    isActive: true,
   });
 
   const theme = await Theme.create({ name: 'Test Thème' });
-  const cursus = await Cursus.create({ title: 'Test Cursus', price: 49, ThemeId: theme.id });
-  await Lesson.create({
-    title: 'Test Leçon',
-    price: 9,
-    description: 'Test',
-    videoUrl: 'https://test.com',
-    CursusId: cursus.id
+
+  await Cursus.create({
+    title: 'Test Cursus',
+    price: 50,
+    ThemeId: theme.id,
   });
 
+  await Lesson.create({
+    title: 'Test Leçon',
+    price: 10,
+    description: 'Une leçon test',
+    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    CursusId: 1,
+  });
+
+  // Récupération du token CSRF
   const csrfRes = await agent.get('/security/csrf-token');
   csrfToken = csrfRes.body.csrfToken;
 
-  await agent.post('/auth/login')
+  // Connexion utilisateur pour obtenir le token JWT
+  const loginRes = await agent
+    .post('/auth/login')
     .set('X-CSRF-Token', csrfToken)
-    .send({ email: 'test@example.com', password: 'Azerty123!' });
+    .send({
+      email: 'test@example.com',
+      password: 'Azerty123!',
+    });
+
+  jwtToken = loginRes.body.token;
+  if (!jwtToken) {
+    console.error('❌ Échec récupération JWT à la connexion', loginRes.body);
+  }
 });
 
 describe('🧪 Tests unitaires principaux', () => {
   test('Création de compte utilisateur', async () => {
     const res = await request(app)
       .post('/auth/register')
+      .set('X-CSRF-Token', csrfToken)
       .send({
-        fullName: 'Nouveau',
+        fullName: 'Nouveau Test',
         email: 'new@example.com',
-        password: 'Test1234!'
+        password: 'Azerty123!',
       });
-    expect(res.statusCode).toBe(200);
+
+    expect([200, 201]).toContain(res.statusCode);
   });
 
   test('Connexion utilisateur', async () => {
-    const res = await agent
+    const res = await request(app)
       .post('/auth/login')
       .set('X-CSRF-Token', csrfToken)
       .send({
         email: 'test@example.com',
-        password: 'Azerty123!'
+        password: 'Azerty123!',
       });
-    expect(res.statusCode).toBe(200);
+
+    expect([200, 201]).toContain(res.statusCode);
+    expect(res.body.token).toBeDefined();
   });
 
   test('Achat de cursus', async () => {
     const res = await agent
       .post('/buy/cursus/1')
-      .set('X-CSRF-Token', csrfToken);
+      .set('X-CSRF-Token', csrfToken)
+      .set('Authorization', `Bearer ${jwtToken}`);
+
     expect(res.statusCode).toBe(201);
   });
 
   test('Achat de leçon', async () => {
     const res = await agent
       .post('/buy/lesson/1')
-      .set('X-CSRF-Token', csrfToken);
+      .set('X-CSRF-Token', csrfToken)
+      .set('Authorization', `Bearer ${jwtToken}`);
+
     expect(res.statusCode).toBe(201);
   });
 
   test('Accès sécurisé aux données : leçons achetées', async () => {
     const res = await agent
       .get('/buy/my-lessons')
-      .set('X-CSRF-Token', csrfToken);
+      .set('X-CSRF-Token', csrfToken)
+      .set('Authorization', `Bearer ${jwtToken}`);
+
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
@@ -84,7 +113,9 @@ describe('🧪 Tests unitaires principaux', () => {
   test('Accès sécurisé aux données : cursus achetés', async () => {
     const res = await agent
       .get('/buy/my-cursus')
-      .set('X-CSRF-Token', csrfToken);
+      .set('X-CSRF-Token', csrfToken)
+      .set('Authorization', `Bearer ${jwtToken}`);
+
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });

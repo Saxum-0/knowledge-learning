@@ -1,44 +1,51 @@
-
 const { v4: uuidv4 } = require('uuid');
 const { sendActivationEmail } = require('../services/mailer.service');
-
 const { User } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+
+// Regex to enforce strong password rules
 const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=[\]{};':"\\|,.<>/?]).{8,}$/;
 
-
-
+/**
+ * Checks if a password is secure (8+ characters, uppercase, lowercase, digit)
+ * @param {string} password
+ * @returns {boolean}
+ */
 function isPasswordSecure(password) {
   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
   return regex.test(password);
 }
 
+/**
+ * Registers a new user and sends an email with activation token.
+ * @route POST /auth/register
+ * @param {Request} req
+ * @param {Response} res
+ */
 exports.register = async (req, res) => {
   const { fullName, email, password } = req.body;
 
-  // Vérif du mot de passe
   if (!isPasswordSecure(password)) {
     return res.status(400).json({
-      message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre."
+      message: "Password must be at least 8 characters long, with a capital letter, lowercase and a number."
     });
   }
 
   if (!passwordRegex.test(password)) {
     return res.status(400).json({
-      message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial."
+      message: "Password must include a special character as well."
     });
   }
 
   try {
     const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) return res.status(409).json({ message: "Email déjà utilisé." });
+    if (existingUser) return res.status(409).json({ message: "Email already in use." });
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const activationToken = uuidv4();
 
-    const activationToken = uuidv4(); // ← Génération du token unique
-
-    const user = await User.create({
+    await User.create({
       fullName,
       email,
       password: hashedPassword,
@@ -47,38 +54,38 @@ exports.register = async (req, res) => {
       activationToken
     });
 
-    // 📧 Envoi de l'email d’activation
     await sendActivationEmail(email, activationToken);
 
     res.status(200).json({
-      message: "Inscription réussie. Vérifie tes mails pour activer ton compte."
+      message: "Registration successful. Check your email to activate your account."
     });
   } catch (err) {
-    console.error("Erreur register :", err);
-    res.status(500).json({ message: "Erreur serveur" });
+    console.error("Register error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
+/**
+ * Activates a user account via token and logs them in.
+ * @route GET /auth/verify/:token
+ * @param {Request} req
+ * @param {Response} res
+ */
 exports.verify = async (req, res) => {
   const { token } = req.params;
-  console.log('🔐 Token reçu :', token)
+  console.log('🔐 Token received:', token)
 
   try {
     const user = await User.findOne({ where: { activationToken: token } });
-
     if (!user) {
-      console.log('❌ Aucun utilisateur trouvé avec ce token')
-      return res.status(404).json({ message: "Lien d'activation invalide ou expiré." });
+      console.log('❌ No user found for this token');
+      return res.status(404).json({ message: "Invalid or expired activation link." });
     }
 
-    console.log('👤 Utilisateur trouvé :', user.email)
-
-    // Activation
     user.isActive = true;
     user.activationToken = null;
     await user.save();
 
-    // 💡 Génère un token JWT comme dans login
     const jwtToken = jwt.sign(
       {
         id: user.id,
@@ -89,47 +96,45 @@ exports.verify = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    // 💡 Envoie le token dans un cookie httpOnly
     res.cookie('token', jwtToken, {
       httpOnly: true,
       sameSite: 'none',
-      secure: true, // obligatoire sur Render/HTTPS
+      secure: true,
       maxAge: 1000 * 60 * 60 * 24
     });
 
-    console.log('✅ Activation + login automatique réussis pour :', user.email)
-
-    res.status(200).json({ message: "✅ Compte activé et connecté. Bienvenue !" });
-
+    console.log('✅ Activation + auto-login success for:', user.email);
+    res.status(200).json({ message: "✅ Account activated and logged in. Welcome!" });
   } catch (error) {
-    console.error('❌ Erreur activation :', error);
-    res.status(500).json({ message: "Erreur serveur lors de l'activation." });
+    console.error('❌ Activation error:', error);
+    res.status(500).json({ message: "Server error during activation." });
   }
 };
 
+/**
+ * Authenticates a user and returns a JWT in a secure cookie.
+ * @route POST /auth/login
+ * @param {Request} req
+ * @param {Response} res
+ */
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // 1. Cherche l'utilisateur
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(401).json({ message: 'Utilisateur non trouvé.' });
+      return res.status(401).json({ message: 'User not found.' });
     }
 
-    // 2. Vérifie le mot de passe
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Mot de passe incorrect.' });
+      return res.status(401).json({ message: 'Incorrect password.' });
     }
 
-    // 3. Vérifie que le compte est activé
     if (!user.isActive) {
-      return res.status(403).json({ message: 'Compte non activé.' });
+      return res.status(403).json({ message: 'Account not activated.' });
     }
 
-    // 4. Crée le token JWT
     const token = jwt.sign(
       {
         id: user.id,
@@ -140,28 +145,31 @@ exports.login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    // 5. Envoie le token dans un cookie httpOnly
     res.cookie('token', token, {
       httpOnly: true,
       sameSite: 'none',
-      secure: true, // true for render
-      maxAge: 1000 * 60 * 60 * 24 // 24h
+      secure: true,
+      maxAge: 1000 * 60 * 60 * 24
     });
 
-    // 6. Réponse OK
-    res.status(200).json({ message: 'Connexion réussie' });
+    res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
-    console.error('Erreur login :', error);
-    res.status(500).json({ message: 'Erreur serveur' });
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
-}
-// controllers/auth.controller.js
+};
 
+/**
+ * Logs out the user by clearing the JWT cookie.
+ * @route POST /auth/logout
+ * @param {Request} req
+ * @param {Response} res
+ */
 exports.logout = (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
     sameSite: 'none',
-    secure: true // ❗️doit être true sur Render / HTTPS
+    secure: true
   });
-  res.status(200).json({ message: 'Déconnexion réussie' });
+  res.status(200).json({ message: 'Logout successful' });
 };
