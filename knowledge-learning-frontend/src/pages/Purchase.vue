@@ -58,29 +58,21 @@ const csrfToken = ref('')
 
 onMounted(async () => {
   try {
-    // 🎟️ 1. Récupère le token CSRF
-    const csrfRes = await api.get('/security/csrf-token', {
-      withCredentials: true
-    })
-    csrfToken.value = csrfRes.data.csrfToken
-
-    // 📦 2. Charge les données (en incluant le header CSRF même en GET)
+    // 🔄 Charge les leçons, cursus et validations sans CSRF
     const [myLessonsRes, myCursusRes, validatedRes] = await Promise.all([
-      api.get('/buy/my-lessons', {
-        headers: { 'X-CSRF-Token': csrfToken.value }
-      }),
-      api.get('/buy/my-cursus', {
-        headers: { 'X-CSRF-Token': csrfToken.value }
-      }),
-      api.get('/validate/my-validations', {
-        headers: { 'X-CSRF-Token': csrfToken.value }
-      })
+      api.get('/buy/my-lessons'),
+      api.get('/buy/my-cursus'),
+      api.get('/validate/my-validations')
     ])
 
     purchasedLessons.value = myLessonsRes.data || []
     purchasedCursus.value = myCursusRes.data || []
     validatedLessons.value = validatedRes.data.lessons || []
     validatedCursus.value = validatedRes.data.cursus || []
+
+    // 🔐 Récupère le token CSRF uniquement pour les actions protégées
+    const csrfRes = await api.get('/security/csrf-token')
+    csrfToken.value = csrfRes.data.csrfToken
 
   } catch (err) {
     console.error('Erreur chargement', err)
@@ -92,33 +84,35 @@ const toggleValidation = async (type, id) => {
   const isLesson = type === 'lesson'
   const list = isLesson ? validatedLessons : validatedCursus
   const url = `/validate-protected/${type}/${id}`
-  const method = list.value.includes(id) ? 'delete' : 'post'
+  const isValidated = list.value.includes(id)
+  const method = isValidated ? 'delete' : 'post'
+  const label = isLesson ? 'Leçon' : 'Cursus'
 
   try {
     await api({
       method,
       url,
       withCredentials: true,
-      headers: { 'X-CSRF-Token': csrfToken.value },
-      data: {} // obligatoire même pour DELETE
+      headers: {
+        'X-CSRF-Token': csrfToken.value
+      },
+      data: {} // nécessaire même pour DELETE avec axios
     })
 
-    message.value =
-      method === 'post'
-        ? `${isLesson ? 'Leçon' : 'Cursus'} validé(e) avec succès ✅`
-        : `${isLesson ? 'Leçon' : 'Cursus'} dévalidé(e) ❌`
+    message.value = `${label} ${isValidated ? 'dévalidé(e) ❌' : 'validé(e) avec succès ✅'}`
 
-    if (method === 'post') {
-      list.value.push(id)
-    } else {
+    if (isValidated) {
       list.value = list.value.filter(el => el !== id)
+    } else {
+      list.value.push(id)
     }
 
   } catch (err) {
-    console.error('Erreur validation', err)
-    message.value = 'Erreur lors de la validation.'
+    console.error(`Erreur lors de la ${isValidated ? 'dévalidation' : 'validation'}`, err)
+    message.value = `Erreur lors de la ${isValidated ? 'dévalidation' : 'validation'} du ${label.toLowerCase()}.`
   }
 }
+
 const extractYoutubeId = (url) => {
   const match = url.match(/(?:v=|be\/)([^&]+)/);
   return match ? match[1] : '';
