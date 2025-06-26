@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <nav class="navbar">
-      <router-link to="/"><img src="/logo.png" alt="logo"></router-link>
+    <nav class="navbar" v-if="!isLoading">
+      <router-link to="/"><img src="/logo.png" alt="logo" /></router-link>
       <router-link v-if="!user" to="/login">Connexion</router-link>
       <router-link v-if="!user" to="/register">Inscription</router-link>
       <router-link v-if="user" to="/dashboard">Dashboard</router-link>
@@ -25,11 +25,15 @@ import api from '@/utils/api'
 const router = useRouter()
 const route = useRoute()
 const user = ref(null)
+const isLoading = ref(true)
 
 const fetchUser = async () => {
+  isLoading.value = true
   const token = localStorage.getItem('token')
+
   if (!token) {
     user.value = null
+    isLoading.value = false
     return
   }
 
@@ -42,26 +46,17 @@ const fetchUser = async () => {
     user.value = res.data
   } catch (err) {
     console.warn('⚠️ Erreur fetchUser :', err)
-    // 🔴 Force la déconnexion locale
     localStorage.removeItem('token')
     user.value = null
+  } finally {
+    isLoading.value = false
   }
 }
 
-
-
-
-
-
-
 onMounted(fetchUser)
 
-// reload user at every page
-watch(() => route.fullPath, () => {
-  fetchUser()
-})
+watch(() => route.fullPath, fetchUser)
 
-// 🔁 Logout
 const logout = async () => {
   try {
     await api.post('/auth/logout', {}, {
@@ -74,10 +69,8 @@ const logout = async () => {
   }
 }
 
-// 🔁 update user for navbar ( login/register)
 window.addEventListener('user-updated', fetchUser)
 </script>
-
 
 <style scoped>
 .navbar {
@@ -114,7 +107,6 @@ window.addEventListener('user-updated', fetchUser)
   width: auto;
   margin-right: 0.5rem;
 }
-
 
 .navbar button {
   background-color: #cd2c2e;
