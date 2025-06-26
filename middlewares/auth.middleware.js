@@ -15,3 +15,13 @@ exports.checkJWT = (req, res, next) => {
     return res.status(403).json({ message: 'Token invalide ou expiré.' });
   }
 };
+
+// 🔐 Middleware de vérification du rôle (admin, etc.)
+exports.checkRole = (role) => {
+  return (req, res, next) => {
+    if (!req.user || req.user.role !== role) {
+      return res.status(403).json({ message: `Accès interdit. Rôle requis : ${role}` });
+    }
+    next();
+  };
+};
