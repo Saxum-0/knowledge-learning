@@ -28,17 +28,18 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: true, // HTTPS obligatoire sur Render
-    sameSite: 'none', // Netlify + Render = cross-site
+    secure: process.env.NODE_ENV === 'production', // false en local, true en prod
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     httpOnly: true
   }
-}));
+}))
+
 
 
 
 
 // 🛡️ Middleware CSRF (à utiliser dans les routes concernées)
-const csrfProtection = csrf({ cookie: false });
+const csrfProtection = csrf({ cookie: true });
 
 // 🌍 Route de test
 app.get('/', (req, res) => {
