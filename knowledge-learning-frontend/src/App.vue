@@ -46,7 +46,12 @@ const fetchUser = async () => {
     user.value = res.data
   } catch (err) {
     console.warn('⚠️ Erreur fetchUser :', err)
-    localStorage.removeItem('token')
+
+    // ⚠️ Si le token est refusé, on le vire, sinon il reste et fout la merde
+    if (err.response?.status === 401 || err.response?.status === 403) {
+      localStorage.removeItem('token')
+    }
+
     user.value = null
   } finally {
     isLoading.value = false
