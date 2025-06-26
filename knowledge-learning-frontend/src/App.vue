@@ -28,37 +28,25 @@ const user = ref(null)
 const isLoading = ref(true)
 
 const fetchUser = async () => {
-  try {
-  const res = await api.get('/user/me', {
-    withCredentials: true
-  })
-  user.value = res.data
-} catch (err) {
-  user.value = null
-}
-
+  isLoading.value = true
 
   try {
     const res = await api.get('/user/me', {
-      headers: { Authorization: `Bearer ${token}` }
+      withCredentials: true
     })
     user.value = res.data
     console.log('👤 Utilisateur récupéré :', res.data)
   } catch (err) {
     console.warn('⚠️ Erreur fetchUser :', err)
-    localStorage.removeItem('token')
     user.value = null
-    console.log('🧹 Token supprimé du localStorage')
-    router.push('/login')
   } finally {
-    isLoading.value = false // ✅ obligatoire pour réafficher la navbar
+    isLoading.value = false
   }
 }
 
-
-
 onMounted(fetchUser)
 
+// Rafraîchit l'utilisateur à chaque changement de route
 watch(() => route.fullPath, fetchUser)
 
 const logout = async () => {
@@ -73,8 +61,10 @@ const logout = async () => {
   }
 }
 
+// Met à jour le user après login/register
 window.addEventListener('user-updated', fetchUser)
 </script>
+
 
 <style scoped>
 .navbar {
