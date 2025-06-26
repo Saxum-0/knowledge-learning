@@ -27,22 +27,29 @@ const route = useRoute()
 const user = ref(null)
 
 const fetchUser = async () => {
-  try {
-    const token = localStorage.getItem('token') // Récupère le token stocké au login
-    if (!token) return
+  const token = localStorage.getItem('token')
+  if (!token) {
+    user.value = null
+    return
+  }
 
+  try {
     const res = await api.get('/user/me', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
-    console.log('👤 Utilisateur récupéré :', res.data)
+
     user.value = res.data
+    console.log('👤 Utilisateur récupéré :', res.data)
   } catch (err) {
-    console.warn('⚠️ Erreur fetchUser :', err)
+    console.warn('⚠️ Erreur fetchUser :', err.message)
+    // Token invalide ou expiré : on nettoie tout
+    localStorage.removeItem('token')
     user.value = null
   }
 }
+
 
 
 
