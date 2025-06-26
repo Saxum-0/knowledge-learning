@@ -28,14 +28,15 @@ const user = ref(null)
 const isLoading = ref(true)
 
 const fetchUser = async () => {
-  const token = localStorage.getItem('token')
+  try {
+  const res = await api.get('/user/me', {
+    withCredentials: true
+  })
+  user.value = res.data
+} catch (err) {
+  user.value = null
+}
 
-  if (!token) {
-    console.log('🔓 Aucun token trouvé, utilisateur non connecté.')
-    user.value = null
-    isLoading.value = false
-    return
-  }
 
   try {
     const res = await api.get('/user/me', {
