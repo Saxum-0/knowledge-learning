@@ -49,13 +49,16 @@ watch(() => route.fullPath, fetchUser)
 
 const logout = async () => {
   try {
-    await api.post('/auth/logout') // withCredentials est déjà dans api.js
+    await api.post('/auth/logout', null, {
+      withCredentials: true
+    })
     user.value = null
     router.push('/')
   } catch (err) {
     console.error('Erreur logout', err)
   }
 }
+
 
 
 // Met à jour le user après login/register
