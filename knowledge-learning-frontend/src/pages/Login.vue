@@ -24,6 +24,7 @@
 import { ref, onMounted } from 'vue'
 import api from '@/utils/api'
 import { useRouter } from 'vue-router'
+import { user } from '@/stores/user' // 👈 adapt if needed
 
 const email = ref('')
 const password = ref('')
@@ -31,46 +32,40 @@ const error = ref('')
 const csrfToken = ref('')
 const router = useRouter()
 
-// Récupère le token CSRF au montage du composant
 onMounted(async () => {
   try {
-    const res = await api.get('/security/csrf-token', {
-    })
+    const res = await api.get('/security/csrf-token')
     csrfToken.value = res.data.csrfToken
   } catch (err) {
-    console.error('Erreur lors de la récupération du token CSRF', err)
+    console.error('Erreur CSRF', err)
   }
 })
 
 const handleLogin = async () => {
   try {
-    const res = await api.post('/auth/login', {
+    // 1. POST /auth/login
+    await api.post('/auth/login', {
       email: email.value,
-      password: password.value,
+      password: password.value
     }, {
       withCredentials: true,
-      headers: {
-        'X-CSRF-Token': csrfToken.value
-      }
+      headers: { 'X-CSRF-Token': csrfToken.value }
     })
 
-    if (res.status === 200) {
-      // 🔐 On stocke le token JWT dans localStorage
-      localStorage.setItem('token', res.data.token)
+    // 2. GET /user/me
+    const res = await api.get('/user/me', { withCredentials: true })
+    user.value = res.data
 
-      // 🔁 Met à jour la navbar dynamiquement
-      window.dispatchEvent(new Event('user-updated'))
-
-      // ✅ Redirige vers dashboard
-      router.push('/dashboard')
-    }
+    // 3. Notify + redirect
+    window.dispatchEvent(new Event('user-updated'))
+    router.push('/dashboard')
   } catch (err) {
-    error.value = 'Connexion échouée : vérifie tes identifiants ou ton activation'
-    console.error(err)
+    error.value = 'Connexion échouée : vérifie tes identifiants ou ton activation.'
+    console.error('Erreur login:', err)
   }
 }
-
 </script>
+
 
 <style scoped>
 /* Style commun pour login et register */
