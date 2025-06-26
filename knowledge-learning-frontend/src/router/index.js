@@ -23,7 +23,7 @@ const routes = [
   { path: '/admin', name: 'Admin', component: Admin },
   { path: '/purchases', name: 'Purchase', component: Purchase },
   { path: '/cursus/:id/lessons', name: 'LessonList', component: LessonList },
-  { path: '/verify/:token', component: () => import('../pages/verify.vue') }
+  { path: '/auth/verify/:token', component: () => import('../pages/verify.vue') }
 ]
 
 const router = createRouter({
