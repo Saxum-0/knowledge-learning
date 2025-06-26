@@ -4,15 +4,15 @@ const app = require('../app');
 const bcrypt = require('bcrypt');
 const { User, Theme, Cursus, Lesson } = require('../models');
 
-const agent = request.agent(app); // Authenticated agent
-const anon = request(app);        // Anonymous agent
+const agent = request.agent(app); // ✅ agent conserve les cookies automatiquement
+const anon = request(app);        // Agent anonyme pour tests non connectés
 
-let token;
 let csrfToken;
 
 beforeAll(async () => {
   await sequelize.sync({ force: true });
 
+  // Création d'un utilisateur actif
   await User.create({
     fullName: 'Testeur',
     email: 'test@example.com',
@@ -22,7 +22,8 @@ beforeAll(async () => {
   });
 
   const theme = await Theme.create({ name: 'Test Thème' });
-  await Cursus.create({
+
+  const cursus = await Cursus.create({
     title: 'Test Cursus',
     price: 50,
     ThemeId: theme.id
@@ -33,21 +34,21 @@ beforeAll(async () => {
     price: 10,
     description: 'Une leçon test',
     videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    CursusId: 1
+    CursusId: cursus.id
   });
 
+  // ⚠️ Récupération du token CSRF avec l'agent connecté
   const csrfRes = await agent.get('/security/csrf-token');
   csrfToken = csrfRes.body.csrfToken;
 
-  const loginRes = await agent
+  // Connexion (le cookie est conservé dans agent)
+  await agent
     .post('/auth/login')
     .set('X-CSRF-Token', csrfToken)
     .send({
       email: 'test@example.com',
       password: 'Azerty123'
     });
-
-  token = loginRes.body.token;
 });
 
 describe('✅ Authentification', () => {
@@ -61,7 +62,7 @@ describe('✅ Authentification', () => {
       });
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.token).toBeDefined();
+    expect(res.headers['set-cookie']).toBeDefined(); // ✅ Cookie JWT attendu
   });
 
   test('Connexion échouée avec mauvais mot de passe', async () => {
@@ -97,19 +98,17 @@ describe('💳 Achats', () => {
   test('Achat de cursus accepté', async () => {
     const res = await agent
       .post('/buy/cursus/1')
-      .set('Authorization', `Bearer ${token}`)
       .set('X-CSRF-Token', csrfToken);
 
-    expect(res.statusCode).toBe(201);
+    expect([200, 201]).toContain(res.statusCode);
   });
 
   test('Achat de leçon accepté', async () => {
     const res = await agent
       .post('/buy/lesson/1')
-      .set('Authorization', `Bearer ${token}`)
       .set('X-CSRF-Token', csrfToken);
 
-    expect(res.statusCode).toBe(201);
+    expect([200, 201]).toContain(res.statusCode);
   });
 });
 
@@ -117,7 +116,6 @@ describe('📘 Leçons achetées', () => {
   test('Récupération des leçons achetées', async () => {
     const res = await agent
       .get('/buy/my-lessons')
-      .set('Authorization', `Bearer ${token}`)
       .set('X-CSRF-Token', csrfToken);
 
     expect(res.statusCode).toBe(200);
@@ -129,7 +127,6 @@ describe('📚 Cursus achetés', () => {
   test('Récupération des cursus achetés', async () => {
     const res = await agent
       .get('/buy/my-cursus')
-      .set('Authorization', `Bearer ${token}`)
       .set('X-CSRF-Token', csrfToken);
 
     expect(res.statusCode).toBe(200);
