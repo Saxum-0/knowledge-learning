@@ -63,17 +63,17 @@ onMounted(() => {
   window.addEventListener('user-updated', async () => {
     try {
       const res = await api.get('/user/me', { withCredentials: true });
-      // stocke l’utilisateur dans un store ou variable globale ici
-      console.log('👤 Utilisateur mis à jour :', res.data);
+      user.value = res.data // 🔥 C’est ça qu’il manquait
+      console.log('👤 Utilisateur mis à jour après login :', res.data)
     } catch (err) {
-      console.warn('⚠️ Erreur mise à jour utilisateur après login');
+      user.value = null
+      console.warn('⚠️ Erreur mise à jour utilisateur après login')
     }
-  });
-});
+  })
+})
 
 
-// Met à jour le user après login/register
-window.addEventListener('user-updated', fetchUser)
+
 </script>
 
 
