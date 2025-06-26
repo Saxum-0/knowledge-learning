@@ -124,7 +124,7 @@ exports.login = async (req, res) => {
     });
 
     // 6. Réponse OK
-    res.status(200).json({ message: 'Connexion réussie', token });
+    res.status(200).json({ message: 'Connexion réussie' });
   } catch (error) {
     console.error('Erreur login :', error);
     res.status(500).json({ message: 'Erreur serveur' });
