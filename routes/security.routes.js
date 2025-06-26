@@ -1,15 +1,14 @@
-// routes/security.routes.js
 const express = require('express');
 const router = express.Router();
-const csrfProtection = require('../middlewares/csrf.middleware');
+const csrf = require('csurf');
 
-// Route publique pour obtenir le token CSRF
+// ❗ Important : crée le middleware CSRF ici
+const csrfProtection = csrf({ cookie: false }); // ou `{ sessionKey: 'session' }` si tu utilises express-session
+
 router.get('/csrf-token', csrfProtection, (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
+  const token = req.csrfToken(); // ✅ fonctionne maintenant
+  res.json({ csrfToken: token });
 });
-
-
-
 
 module.exports = router;
 
