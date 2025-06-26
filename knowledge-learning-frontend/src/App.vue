@@ -39,16 +39,16 @@ const fetchUser = async () => {
         Authorization: `Bearer ${token}`
       }
     })
-
     user.value = res.data
-    console.log('👤 Utilisateur récupéré :', res.data)
   } catch (err) {
-    console.warn('⚠️ Erreur fetchUser :', err.message)
-    // Token invalide ou expiré : on nettoie tout
+    console.warn('⚠️ Erreur fetchUser :', err)
+    // 🔴 Force la déconnexion locale
     localStorage.removeItem('token')
     user.value = null
   }
 }
+
+
 
 
 
