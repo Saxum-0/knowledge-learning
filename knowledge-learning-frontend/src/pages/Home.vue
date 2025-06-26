@@ -15,7 +15,15 @@
 
     <div class="video-section">
       <h2>🎥 Découvrez le fonctionnement en vidéo</h2>
-      <video  src="https://www.youtube.com/watch?v=JXFbRkmFn4s&list=PLi9e6Kz68NIJVK3inacHlbQYPb0_ofN01&index=8" frameborder="0" allowfullscreen></video>
+      <iframe 
+  width="560" 
+  height="315" 
+  src="https://www.youtube.com/embed/JXFbRkmFn4s?list=PLi9e6Kz68NIJVK3inacHlbQYPb0_ofN01" 
+  frameborder="0" 
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+  allowfullscreen>
+</iframe>
+
     </div>
   </div>
 </template>
