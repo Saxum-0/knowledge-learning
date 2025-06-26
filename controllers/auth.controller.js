@@ -61,28 +61,29 @@ exports.register = async (req, res) => {
 
 exports.verify = async (req, res) => {
   const { token } = req.params;
+  console.log('🔐 Token reçu :', token)
 
   try {
     const user = await User.findOne({ where: { activationToken: token } });
 
     if (!user) {
-      console.log('❌ Aucun utilisateur trouvé pour le token :', token);
+      console.log('❌ Aucun utilisateur trouvé avec ce token')
       return res.status(404).json({ message: "Lien d'activation invalide ou expiré." });
     }
 
-    // LOG DÉBUG
-    console.log('✅ Utilisateur trouvé, activationToken =', token, 'email =', user.email);
+    console.log('👤 Utilisateur trouvé :', user.email)
 
+    // Activation
     user.isActive = true;
     user.activationToken = null;
     await user.save();
 
-    console.log('🔓 Utilisateur activé :', user.email);
+    console.log('✅ Activation réussie pour :', user.email)
 
     res.status(200).json({ message: "✅ Compte activé avec succès. Vous pouvez maintenant vous connecter." });
 
   } catch (error) {
-    console.error('Erreur activation :', error);
+    console.error('❌ Erreur activation :', error);
     res.status(500).json({ message: "Erreur serveur lors de l'activation." });
   }
 };
