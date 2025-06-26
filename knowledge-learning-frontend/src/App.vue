@@ -59,6 +59,17 @@ const logout = async () => {
   }
 }
 
+onMounted(() => {
+  window.addEventListener('user-updated', async () => {
+    try {
+      const res = await api.get('/user/me', { withCredentials: true });
+      // stocke l’utilisateur dans un store ou variable globale ici
+      console.log('👤 Utilisateur mis à jour :', res.data);
+    } catch (err) {
+      console.warn('⚠️ Erreur mise à jour utilisateur après login');
+    }
+  });
+});
 
 
 // Met à jour le user après login/register
