@@ -78,9 +78,6 @@ app.use('/admin/users', require('./routes/admin/user.routes'));
 app.use('/admin/certifications', require('./routes/admin/certification.routes'));
 app.use('/admin/validated-lessons', require('./routes/admin/validatedLesson.routes'));
 
-const paypalRoutes = require('./routes/paypal/create-order');
-app.use('/paypal', paypalRoutes);
-
 
 
 module.exports = app;
