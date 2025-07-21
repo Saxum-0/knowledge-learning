@@ -1,0 +1,91 @@
+.
+├── app.js
+├── config
+│   └── db.js
+├── controllers
+│   ├── admin
+│   │   ├── certification.controller.js
+│   │   ├── cursus.controller.js
+│   │   ├── lesson.controller.js
+│   │   ├── purchase.controller.js
+│   │   ├── theme.controller.js
+│   │   ├── user.controller.js
+│   │   └── validatedLesson.controller.js
+│   ├── auth.controller.js
+│   ├── certification.controller.js
+│   ├── lesson.controller.js
+│   ├── purchase.controller.js
+│   ├── user.controller.js
+│   └── validation.controller.js
+├── docs
+│   ├── BDD.pdf
+│   ├── link.pdf
+│   ├── Slides_knowledge_learning.odp
+│   ├── tests.png
+│   └── thumbnail_routes.png
+├── knowledge-learning-frontend
+│   ├── csrf.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   ├── _redirects
+│   │   ├── icokl.png
+│   │   ├── logo.png
+│   │   └── vite.svg
+│   ├── README.md
+│   ├── src
+│   │   ├── App.vue
+│   │   ├── assets
+│   │   ├── components
+│   │   ├── main.js
+│   │   ├── pages
+│   │   ├── router
+│   │   ├── stores
+│   │   ├── style.css
+│   │   └── utils
+│   └── vite.config.js
+├── middlewares
+│   ├── auth.middleware.js
+│   └── csrf.middleware.js
+├── models
+│   ├── certification.model.js
+│   ├── cursus.model.js
+│   ├── index.js
+│   ├── lesson.model.js
+│   ├── purchase.model.js
+│   ├── theme.model.js
+│   ├── user.model.js
+│   ├── validatedCursus.model.js
+│   └── validatedLesson.model.js
+├── package-lock.json
+├── package.json
+├── routes
+│   ├── admin
+│   │   ├── certification.routes.js
+│   │   ├── cursus.routes.js
+│   │   ├── lesson.routes.js
+│   │   ├── purchase.routes.js
+│   │   ├── theme.routes.js
+│   │   ├── user.routes.js
+│   │   └── validatedLesson.routes.js
+│   ├── admin.routes.js
+│   ├── auth.routes.js
+│   ├── certification.routes.js
+│   ├── public.routes.js
+│   ├── purchase.routes.js
+│   ├── security.routes.js
+│   ├── user.routes.js
+│   ├── validation.routes.js
+│   └── validationProtected.routes.js
+├── scripts
+├── seed.js
+├── server.js
+├── services
+│   └── mailer.service.js
+├── structure.txt
+├── test
+│   └── api.test.js
+└── test.db
+
+21 directories, 68 files
