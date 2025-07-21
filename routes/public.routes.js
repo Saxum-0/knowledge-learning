@@ -5,13 +5,13 @@ const { Theme, Cursus, Lesson } = require('../models'); // ← utilise le fichie
 const { checkJWT } = require('../middlewares/auth.middleware');
 
 
-// ✅ Tous les thèmes avec leurs cursus
+// all themes with cursus
 router.get('/themes', async (req, res) => {
   try {
     const themes = await Theme.findAll({
       include: {
         model: Cursus,
-        as: 'cursus' // ← alias défini dans index.js
+        as: 'cursus' 
       }
     });
     res.json(themes);
@@ -21,7 +21,7 @@ router.get('/themes', async (req, res) => {
   }
 });
 
-// ✅ Tous les cursus d’un thème avec leurs leçons
+// all cursus 
 router.get('/themes/:themeId/cursus', async (req, res) => {
   try {
     const { themeId } = req.params;
@@ -39,7 +39,7 @@ router.get('/themes/:themeId/cursus', async (req, res) => {
   }
 });
 
-// ✅ Toutes les leçons d’un cursus
+// all lessons by cursus
 router.get('/cursus/:cursusId/lessons', async (req, res) => {
   try {
     const { cursusId } = req.params;

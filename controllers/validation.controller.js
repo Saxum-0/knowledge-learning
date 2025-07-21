@@ -17,7 +17,7 @@ exports.validateLesson = async (req, res) => {
 
     await ValidatedLesson.create({ UserId: userId, LessonId: lessonId });
 
-    // 🔁 Vérifie les autres leçons du cursus
+    // check other lessons
     const allLessons = await Lesson.findAll({ where: { CursusId: lesson.CursusId } });
     const lessonIds = allLessons.map(l => l.id);
 
@@ -33,12 +33,12 @@ exports.validateLesson = async (req, res) => {
     const allPurchased = purchased.length === lessonIds.length;
 
     if (allValidated && allPurchased) {
-  // ✅ Crée ou trouve la validation de cursus
+  // find or create cursus val
   const [validatedCursus] = await ValidatedCursus.findOrCreate({
     where: { UserId: userId, CursusId: lesson.CursusId }
   });
 
-  // 🎓 Crée la certification si pas encore existante
+  //  find or create certif
   const [certif] = await Certification.findOrCreate({
     where: { UserId: userId, CursusId: lesson.CursusId }
   });
@@ -52,6 +52,7 @@ exports.validateLesson = async (req, res) => {
   }
 };
 
+// validation cursus
 
 exports.validateCursus = async (req, res) => {
   const userId = req.user.id;
@@ -86,6 +87,8 @@ exports.validateCursus = async (req, res) => {
   }
 };
 
+// all validations
+
 exports.getMyValidations = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -110,6 +113,8 @@ exports.getMyValidations = async (req, res) => {
   }
 };
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+// unvalidate lesson
 
 exports.unvalidateLesson = async (req, res) => {
   const { id } = req.params
@@ -142,17 +147,19 @@ exports.unvalidateLesson = async (req, res) => {
   return res.status(500).json({ message: "Base de données occupée, réessaye." })
 }
 
+// unvalisdate cursus
+
 exports.unvalidateCursus = async (req, res) => {
   const userId = req.user.id
   const cursusId = req.params.id
 
   try {
-    // Supprimer la validation du cursus
+    // delete validation
     await ValidatedCursus.destroy({
       where: { UserId: userId, CursusId: cursusId }
     })
 
-    // Supprimer la certification liée (si elle existe)
+    // delete certification
     await Certification.destroy({
       where: { UserId: userId, CursusId: cursusId }
     })

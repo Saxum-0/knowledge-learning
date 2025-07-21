@@ -55,8 +55,8 @@ beforeAll(async () => {
   }
 });
 
-describe('🧪 Tests unitaires principaux', () => {
-  test('Création de compte utilisateur', async () => {
+describe('🧪 Tests des fonctionnalités d’achat (Stripe intégré)', () => {
+  test('✅ Création de compte utilisateur', async () => {
     const res = await request(app)
       .post('/auth/register')
       .set('X-CSRF-Token', csrfToken)
@@ -69,7 +69,7 @@ describe('🧪 Tests unitaires principaux', () => {
     expect([200, 201]).toContain(res.statusCode);
   });
 
-  test('Connexion utilisateur', async () => {
+  test('✅ Connexion utilisateur', async () => {
     const res = await request(app)
       .post('/auth/login')
       .set('X-CSRF-Token', csrfToken)
@@ -82,7 +82,7 @@ describe('🧪 Tests unitaires principaux', () => {
     expect(res.body.token).toBeDefined();
   });
 
-  test('Achat de cursus', async () => {
+  test('✅ Achat de cursus via POST direct', async () => {
     const res = await agent
       .post('/buy/cursus/1')
       .set('X-CSRF-Token', csrfToken)
@@ -91,7 +91,7 @@ describe('🧪 Tests unitaires principaux', () => {
     expect(res.statusCode).toBe(201);
   });
 
-  test('Achat de leçon', async () => {
+  test('✅ Achat de leçon via POST direct', async () => {
     const res = await agent
       .post('/buy/lesson/1')
       .set('X-CSRF-Token', csrfToken)
@@ -100,7 +100,7 @@ describe('🧪 Tests unitaires principaux', () => {
     expect(res.statusCode).toBe(201);
   });
 
-  test('Accès sécurisé aux données : leçons achetées', async () => {
+  test('✅ Récupération des leçons achetées', async () => {
     const res = await agent
       .get('/buy/my-lessons')
       .set('X-CSRF-Token', csrfToken)
@@ -110,7 +110,7 @@ describe('🧪 Tests unitaires principaux', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  test('Accès sécurisé aux données : cursus achetés', async () => {
+  test('✅ Récupération des cursus achetés', async () => {
     const res = await agent
       .get('/buy/my-cursus')
       .set('X-CSRF-Token', csrfToken)

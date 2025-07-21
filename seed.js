@@ -75,7 +75,7 @@ const runSeed = async () => {
         CursusId: dressage.id },
     ]);
 
-    // Utilisateurs
+    // Users
     const hashedPassword = await bcrypt.hash('azerty123', 10);
     await User.bulkCreate([
       {

@@ -2,13 +2,13 @@ require('dotenv').config();
 const app = require('./app');
 const { sequelize } = require('./models'); // ✅ On importe l'instance Sequelize correctement
 
-// 🌍 Lancement du serveur HTTP
+// launch server HTTP
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
 
-// 🔄 Connexion + Synchronisation Sequelize
+// Connexion and Synchronisation Sequelize
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Connexion à la base de données réussie.');

@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 // middlewares/auth.middleware.js
 
 if (process.env.NODE_ENV === 'test') {
-  // En mode test, checkJWT est une fonction no-op
+  // test mode
   module.exports.checkJWT = (req, res, next) => next();
 } else {
   const jwt = require('jsonwebtoken');
@@ -44,7 +44,7 @@ exports.checkJWT = (req, res, next) => {
   }
 };
 
-// 🔐 Middleware de vérification du rôle (admin, etc.)
+// Middleware for rôles (admin, client)
 exports.checkRole = (role) => {
   return (req, res, next) => {
     if (!req.user || req.user.role !== role) {

@@ -1,4 +1,4 @@
-// Vérifie si toutes les leçons du cursus sont validées
+// Vérification lessons of cursus
 const lesson = await Lesson.findByPk(lessonId);
 if (lesson && lesson.CursusId) {
   const allLessons = await Lesson.findAll({ where: { CursusId: lesson.CursusId } });
@@ -11,7 +11,7 @@ if (lesson && lesson.CursusId) {
   });
 
   if (validatedLessons.length === allLessons.length) {
-    // Vérifie si la certification existe déjà
+    // verify certification
     const alreadyCertified = await Certification.findOne({
       where: {
         UserId: userId,

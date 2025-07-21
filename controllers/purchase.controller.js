@@ -1,7 +1,7 @@
 const { Purchase, Lesson, Cursus } = require('../models');
 
 
-// POST: Acheter une leçon
+// POST: buy lesson
 exports.buyLesson = async (req, res) => {
   const userId = req.user.id;
   const lessonId = req.params.id;
@@ -14,7 +14,7 @@ exports.buyLesson = async (req, res) => {
 
     console.log({ UserId: userId, LessonId: lesson.id });
 
-    // Vérifie si déjà achetée
+    // Vérify if bought
     const alreadyPurchased = await Purchase.findOne({
       where: { UserId: userId, LessonId: lesson.id }
     });
@@ -23,7 +23,7 @@ exports.buyLesson = async (req, res) => {
       return res.status(409).json({ message: "Leçon déjà achetée." });
     }
 
-    // Enregistre l’achat
+    // register purchase
     await Purchase.create({
       UserId: userId,
       LessonId: lesson.id
@@ -39,7 +39,7 @@ console.log("🧪 POST Achat cookies:", req.headers.cookie);
   }
 };
 
-// POST: Acheter un cursus
+// POST: buy cursus
 exports.buyCursus = async (req, res) => {
   const userId = req.user.id;
   const cursusId = req.params.id;
@@ -72,14 +72,14 @@ exports.buyCursus = async (req, res) => {
   }
 };
 
-// GET: Toutes les leçons achetées (directes ou via cursus)
+// GET: all lessons bought (directes ou via cursus)
 const { Op } = require('sequelize');
 
 exports.getMyLessons = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 1. Leçons achetées directement
+    // lesson buy
     const directLessons = await Lesson.findAll({
       attributes: ['id', 'title', 'description', 'videoUrl', 'price', 'CursusId', 'createdAt'],
       include: [
@@ -91,7 +91,7 @@ exports.getMyLessons = async (req, res) => {
       ]
     });
 
-    // 2. Cursus achetés
+    // 2. Cursus bought
     const purchasedCursus = await Purchase.findAll({
       attributes: ['CursusId'],
       where: {
@@ -102,13 +102,13 @@ exports.getMyLessons = async (req, res) => {
 
     const cursusIds = purchasedCursus.map(p => p.CursusId);
 
-    // 3. Leçons liées aux cursus
+    // lessons by cursus
     const lessonsFromCursus = await Lesson.findAll({
       where: { CursusId: cursusIds },
       attributes: ['id', 'title', 'description', 'videoUrl', 'price', 'CursusId', 'createdAt']
     });
 
-    // 4. Fusionner et dédupliquer
+    // 4. fusion and duplicate
     const allLessons = [...directLessons, ...lessonsFromCursus];
     const uniqueLessonsMap = new Map();
     allLessons.forEach(lesson => uniqueLessonsMap.set(lesson.id, lesson));
@@ -128,7 +128,7 @@ exports.getMyCursus = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // 1. Cursus achetés directement
+    // cursus bought
     const directCursusPurchases = await Purchase.findAll({
       where: {
         UserId: userId,
@@ -136,13 +136,13 @@ exports.getMyCursus = async (req, res) => {
       },
       include: [{
       model: Cursus,
-      as: 'cursus' // ← correspond à ton alias défini dans les associations
+      as: 'cursus' 
 }]
 
     });
     const directCursusIds = directCursusPurchases.map(p => p.CursusId);
 
-    // 2. Leçons achetées
+    // lessons bought
     const lessonPurchases = await Purchase.findAll({
       where: {
         UserId: userId,
@@ -152,7 +152,7 @@ exports.getMyCursus = async (req, res) => {
 
     const purchasedLessonIds = lessonPurchases.map(p => p.LessonId);
 
-    // 3. Vérifie si un cursus a toutes ses leçons achetées
+    // verify lessons bought in cursus
     const allCursus = await Cursus.findAll({
       include: [{ model: Lesson, as: 'lessons' }]
     });
@@ -165,7 +165,7 @@ exports.getMyCursus = async (req, res) => {
       return allLessonsBought && !directCursusIds.includes(c.id);
     });
 
-    // 4. Fusionne sans doublons
+    // no twice
     const fullCursusList = [
       ...directCursusPurchases.map(p => p.cursus),
       ...extraCursus

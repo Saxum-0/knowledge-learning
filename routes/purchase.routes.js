@@ -5,7 +5,7 @@ const { checkJWT } = require('../middlewares/auth.middleware');
 const csrfProtection = require('../middlewares/csrf.middleware');
 const purchaseController = require('../controllers/purchase.controller');
 
-// Middleware debug pour logger les headers/cookies
+
 router.post('/lesson/:id',
   (req, res, next) => {
     console.log('POST session ID:', req.sessionID);
