@@ -1,15 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const Stripe = require('stripe');
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // Celui-là peut rester
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 router.post('/create-checkout-session', async (req, res) => {
   console.log("📦 Données reçues:", req.body);
 
-  const { amount, lessonId } = req.body;
+  const { amount, lessonId, cursusId } = req.body;
 
-  // ✅ URLs codées en dur pour débloquer Stripe
-  const successUrl = `https://knowledge-learning.netlify.app/purchases`;
+  const type = lessonId ? 'lesson' : 'cursus';
+  const id = lessonId || cursusId;
+
+  if (!id) {
+    return res.status(400).json({ error: '❌ Aucune ID fournie (lessonId ou cursusId requis)' });
+  }
+
+  const successUrl = `https://knowledge-learning.netlify.app/purchases-success?type=${type}&id=${id}`;
   const cancelUrl = `https://knowledge-learning.netlify.app/`;
 
   console.log("👉 successUrl:", successUrl);
@@ -23,7 +29,7 @@ router.post('/create-checkout-session', async (req, res) => {
         price_data: {
           currency: 'eur',
           product_data: {
-            name: `Achat leçon #${lessonId || 'n/a'}`,
+            name: `Achat ${type} #${id}`,
           },
           unit_amount: Math.round(parseFloat(amount) * 100),
         },
@@ -37,7 +43,7 @@ router.post('/create-checkout-session', async (req, res) => {
     res.json({ id: session.id });
   } catch (err) {
     console.error('❌ Erreur Stripe :', err.message);
-    console.error(err); // stack complète
+    console.error(err);
     res.status(500).json({ error: 'Erreur création session Stripe' });
   }
 });
