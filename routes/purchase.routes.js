@@ -17,12 +17,6 @@ router.post('/lesson/:id',
   purchaseController.buyLesson
 );
 
-
-  checkJWT,
-  csrfProtection,
-  purchaseController.buyLesson
-
-
 router.post('/cursus/:id', checkJWT, csrfProtection, purchaseController.buyCursus);
 router.get('/my-lessons', checkJWT, csrfProtection, purchaseController.getMyLessons);
 router.get('/my-cursus', checkJWT, csrfProtection, purchaseController.getMyCursus);
