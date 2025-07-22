@@ -43,14 +43,24 @@ const fetchUser = async () => {
 
 // fetch user and toast
 onMounted(() => {
-  fetchUser();
+  console.log('📦 Cookies :', document.cookie);
+
+  fetchUser().finally(() => {
+    isLoading.value = false;
+  });
+
   window.addEventListener('user-updated', async () => {
-    await fetchUser();
-    if (user.value) {
-      alert(`👋 Bienvenue, ${user.value.fullName}`);
+    try {
+      await fetchUser();
+      if (user.value) {
+        alert(`👋 Bienvenue, ${user.value.fullName}`);
+      }
+    } catch (err) {
+      console.warn("⚠️ Erreur lors de la mise à jour de l'utilisateur");
     }
   });
 });
+
 
 // 🔁 Met à jour l’utilisateur à chaque changement de route
 watch(() => route.fullPath, () => {
