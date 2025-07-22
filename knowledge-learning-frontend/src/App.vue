@@ -30,7 +30,7 @@ const isLoading = ref(true)
 const fetchUser = async () => {
   isLoading.value = true
   try {
-    const res = await api.get('/user/me', { withCredentials: true })
+    const res = await api.get('/auth/me', { withCredentials: true })
     user.value = res.data
     console.log('👤 Utilisateur récupéré :', res.data)
   } catch (err) {
