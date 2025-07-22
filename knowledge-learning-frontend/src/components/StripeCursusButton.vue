@@ -22,7 +22,8 @@ const checkout = async () => {
     })
 
     const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
-    await stripe.redirectToCheckout({ sessionId: res.data.sessionId })
+    await stripe.redirectToCheckout({ sessionId: res.data.id })
+
 
   } catch (err) {
     console.error('Erreur lors du paiement Stripe :', err)
