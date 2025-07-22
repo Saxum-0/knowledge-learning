@@ -9,9 +9,11 @@ const props = defineProps({
 
 const checkout = async () => {
   try {
+    // 🔐 Récupère le token CSRF
     const csrfRes = await api.get('/security/csrf-token', { withCredentials: true })
     const csrfToken = csrfRes.data.csrfToken
 
+    // 🧾 Crée la session Stripe côté serveur
     const res = await api.post('/stripe/create-checkout-session', {
       lessonId: props.lessonId,
       amount: props.amount
@@ -20,16 +22,24 @@ const checkout = async () => {
       withCredentials: true
     })
 
-    const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
     const sessionId = res?.data?.id
-if (!sessionId) {
-  throw new Error("❌ sessionId introuvable")
-}
-await stripe.redirectToCheckout({ sessionId })
+    console.log("👉 sessionId reçu :", sessionId)
 
+    if (!sessionId || typeof sessionId !== 'string') {
+      throw new Error("❌ sessionId invalide ou manquant")
+    }
+
+    // 🚀 Redirection vers Stripe
+    const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+    const { error } = await stripe.redirectToCheckout({ sessionId })
+
+    if (error) {
+      console.error("❌ Erreur redirectToCheckout :", error.message)
+      alert("Redirection Stripe échouée : " + error.message)
+    }
 
   } catch (err) {
-    console.error('Erreur Stripe:', err)
+    console.error('❌ Erreur Stripe :', err)
     alert('❌ Paiement échoué.')
   }
 }
