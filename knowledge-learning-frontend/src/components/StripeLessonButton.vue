@@ -21,7 +21,12 @@ const checkout = async () => {
     })
 
     const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
-    await stripe.redirectToCheckout({ sessionId: res.data.id })
+    const sessionId = res?.data?.id
+if (!sessionId) {
+  throw new Error("❌ sessionId introuvable")
+}
+await stripe.redirectToCheckout({ sessionId })
+
 
   } catch (err) {
     console.error('Erreur Stripe:', err)
@@ -31,7 +36,7 @@ const checkout = async () => {
 </script>
 
 <template>
-  <button @click="checkout">Payer avec Stripe</button>
+  <button @click="checkout">Acheter</button>
 </template>
 
 <style scoped>
