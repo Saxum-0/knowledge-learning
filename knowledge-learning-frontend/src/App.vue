@@ -1,19 +1,14 @@
 <template>
   <div id="app">
-    <nav class="navbar">
+    <nav class="navbar" v-if="!isLoading">
       <router-link to="/"><img src="/logo.png" alt="logo" /></router-link>
-
-      <div class="nav-links">
-        <router-link v-if="!user" to="/login">Connexion</router-link>
-        <router-link v-if="!user" to="/register">Inscription</router-link>
-
-        <router-link v-if="user" to="/dashboard">Dashboard</router-link>
-        <router-link v-if="user" to="/themes">Thèmes</router-link>
-        <router-link v-if="user" to="/certifications">Certifications</router-link>
-        <router-link v-if="user?.role === 'admin'" to="/admin">Admin</router-link>
-
-        <button v-if="user" @click="logout">Se déconnecter</button>
-      </div>
+      <router-link v-if="!user" to="/login">Connexion</router-link>
+      <router-link v-if="!user" to="/register">Inscription</router-link>
+      <router-link v-if="user" to="/dashboard">Dashboard</router-link>
+      <router-link v-if="user" to="/themes">Thèmes</router-link>
+      <router-link v-if="user" to="/certifications">Certifications</router-link>
+      <router-link v-if="user?.role === 'admin'" to="/admin">Admin</router-link>
+      <button v-if="user" @click="logout">Se déconnecter</button>
     </nav>
 
     <main v-if="!isLoading">
@@ -32,12 +27,11 @@ const route = useRoute()
 const user = ref(null)
 const isLoading = ref(true)
 
-// Fonction pour récupérer l'utilisateur
 const fetchUser = async () => {
   try {
     const res = await api.get('/auth/me', { withCredentials: true })
     user.value = res.data
-    console.log('👤 Utilisateur récupéré :', user.value)
+    console.log('👤 Utilisateur récupéré :', res.data)
   } catch (err) {
     console.warn('⚠️ Erreur fetchUser :', err.message)
     user.value = null
@@ -46,27 +40,33 @@ const fetchUser = async () => {
   }
 }
 
-// Au montage : récupérer user + écouter user-updated
+// ✅ Au montage : on tente de récupérer l’utilisateur
 onMounted(() => {
   console.log('📦 Cookies :', document.cookie)
   fetchUser()
+})
 
-  window.addEventListener('user-updated', async () => {
+// ✅ Mise à jour lors d’un login/register
+window.addEventListener('user-updated', async () => {
+  try {
     await fetchUser()
     if (user.value) {
       alert(`👋 Bienvenue, ${user.value.fullName}`)
     }
-  })
+  } catch (err) {
+    console.warn('⚠️ Erreur mise à jour utilisateur après login')
+    user.value = null
+  }
 })
 
-// Changement de route → re-fetch user si token présent
+// 🔁 Re-fetch à chaque changement de route
 watch(() => route.fullPath, () => {
   if (document.cookie.includes('token')) {
     fetchUser()
   }
 })
 
-// Déconnexion
+// 🔓 Déconnexion
 const logout = async () => {
   try {
     await api.post('/auth/logout', null, { withCredentials: true })
@@ -92,7 +92,8 @@ const logout = async () => {
 .navbar a {
   color: white;
   text-decoration: none;
-  margin-left: 1rem;
+  display: flex;
+  align-items: center;
   font-weight: 500;
   font-size: 1rem;
   transition: opacity 0.3s;
@@ -109,6 +110,7 @@ const logout = async () => {
 
 .navbar img {
   height: 40px;
+  width: auto;
   margin-right: 0.5rem;
 }
 
