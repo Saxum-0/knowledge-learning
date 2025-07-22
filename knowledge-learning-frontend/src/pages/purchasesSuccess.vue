@@ -43,6 +43,6 @@ onMounted(async () => {
 </script>
 
 <template>
-  <p>Achat validé ✅ Vous allez être redirigé vers vos leçons...</p>
+  <p>Achat validé ✅</p>
 </template>
 
