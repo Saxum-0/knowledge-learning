@@ -1,3 +1,18 @@
-node_modules
+# Node
+node_modules/
 .env
+*.log
 
+# Vite / Vue / React
+dist/
+build/
+.cache/
+.vite/
+.vercel/
+.netlify/
+
+# OS
+.DS_Store
+
+# Test
+coverage/
