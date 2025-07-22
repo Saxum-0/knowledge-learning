@@ -24,7 +24,7 @@ const routes = [
   { path: '/purchases', name: 'Purchase', component: Purchase },
   { path: '/cursus/:id/lessons', name: 'LessonList', component: LessonList },
   { path: '/auth/verify/:token', component: () => import('../pages/verify.vue') },
-  { path: '/purchases-success', name: 'PurchasesSuccess', component: () => import('@/views/PurchasesSuccess.vue')}
+  { path: '/purchases-success', name: 'PurchasesSuccess', component: () => import('@/pages/PurchasesSuccess.vue')}
 
 ]
 
