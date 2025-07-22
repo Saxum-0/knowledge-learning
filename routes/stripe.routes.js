@@ -21,8 +21,8 @@ router.post('/create-checkout-session', async (req, res) => {
         },
         quantity: 1,
       }],
-      success_url: `${process.env.BACK_URL}/stripe/success?cursusId=${cursusId}`,
-      cancel_url: `${process.env.BACK_URL}/stripe/cancel`,
+      success_url: `${process.env.FRONT_URL}/purchases`,
+      cancel_url: `${process.env.FRONT_URL}/`,
     });
 
     res.json({ id: session.id });
