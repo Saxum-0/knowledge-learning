@@ -41,15 +41,16 @@ const fetchUser = async () => {
   }
 }
 
-// ✅ Ne fetch l'utilisateur que si un cookie est présent
+// fetch user and toast
 onMounted(() => {
-  console.log('📦 Cookies :', document.cookie)
-  if (document.cookie.includes('token')) {
-    fetchUser()
-  } else {
-    isLoading.value = false
-  }
-})
+  fetchUser();
+  window.addEventListener('user-updated', async () => {
+    await fetchUser();
+    if (user.value) {
+      alert(`👋 Bienvenue, ${user.value.fullName}`);
+    }
+  });
+});
 
 // 🔁 Met à jour l’utilisateur à chaque changement de route
 watch(() => route.fullPath, () => {
